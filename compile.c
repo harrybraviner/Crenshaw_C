@@ -45,21 +45,24 @@ int compile(FILE *srcfile, FILE *asmfile){
 
 int expression(FILE *srcfile, FILE *asmfile){
 	term(srcfile, asmfile);
-	fprintf(asmfile, "\tmov\tebx,\teax\n");
 	REMOVEWHITESPACE;
-	if(isAdd(nextChar)){
-		READCHAR;
-		term(srcfile, asmfile);
-		fprintf(asmfile, "\tadd\teax,\tebx\n");
-	}
-	else if(isSub(nextChar)){
-		READCHAR;
-		term(srcfile, asmfile);
-		fprintf(asmfile, "\tsub\tebx,\teax\n");
-		fprintf(asmfile, "\tmov\teax,\tebx\n");
-	}
-	else {
-		EXPECTED( "math operator" );
+	while(isMathOp(nextChar)){
+		fprintf(asmfile, "\tmov\tebx,\teax\n");
+		if(isAdd(nextChar)){
+			READCHAR;
+			term(srcfile, asmfile);
+			fprintf(asmfile, "\tadd\teax,\tebx\n");
+		}
+		else if(isSub(nextChar)){
+			READCHAR;
+			term(srcfile, asmfile);
+			fprintf(asmfile, "\tsub\tebx,\teax\n");
+			fprintf(asmfile, "\tmov\teax,\tebx\n");
+		}
+		else {	// This should only actually run if I forget to include a math operator in the isMathOp function!
+			EXPECTED( "math operator" );
+		}
+		REMOVEWHITESPACE;
 	}
 	return 0;
 }
@@ -70,6 +73,7 @@ int term(FILE *srcfile, FILE *asmfile){
 
 	GETNUM( numLit );
 	fprintf(asmfile, "\tmov\teax,\t%s\n", numLit);
+	free(numLit);
 	return 0;
 }
 
@@ -90,5 +94,10 @@ inline int isAdd(const char inChar){
 
 inline int isSub(const char inChar){
 	if (inChar == '-') return 1;
+	else return 0;
+}
+
+inline int isMathOp(const char inChar){
+	if (inChar == '+' || inChar == '-') return 1;
 	else return 0;
 }
