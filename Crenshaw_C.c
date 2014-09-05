@@ -79,5 +79,5 @@ int main(int argc, char *argv[]){
 }
 
 void emitDriver(FILE *driverfile){
-	fprintf(driverfile, "#include <stdio.h>\n\nint main(int argc, char *argv[]){\n\tint ret_status;\n\tret_status = asm_main();\n\treturn ret_status;\n}\n");
+	fprintf(driverfile, "#include <stdio.h>\n\nint main(int argc, char *argv[]){\n\tint ret_status;\n\tret_status = asm_main();\n\tprintf(\"ret_status = %s\\n\",ret_status);\treturn ret_status;\n}\n", "%d");
 }

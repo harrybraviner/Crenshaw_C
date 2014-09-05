@@ -12,9 +12,12 @@ int compile(FILE *srcfile, FILE *asmfile);
 
 // Parse a single expression
 int expression(FILE *srcfile, FILE *asmfile);
+int term(FILE *srcfile, FILE *asmfile);
 
 int isDigit(const char inChar);	// Check if a char is a numeral
 int isWhitespace(const char inChar); // Check is a char is whitespace
+int isAdd(const char inChar); // Check is a char is whitespace
+int isSub(const char inChar); // Check is a char is whitespace
 
 
 #endif
