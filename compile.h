@@ -13,11 +13,15 @@ int compile(FILE *srcfile, FILE *asmfile);
 // Parse a single expression
 int expression(FILE *srcfile, FILE *asmfile);
 int term(FILE *srcfile, FILE *asmfile);
+int factor(FILE *srcfile, FILE *asmfile);
 
 int isDigit(const char inChar);	// Check if a char is a numeral
 int isWhitespace(const char inChar); // Check is a char is whitespace
 int isAdd(const char inChar); // Check if a char is the addition operator
 int isSub(const char inChar); // Check if a char is the subtraction operator
-int isMathOp(const char inChar); // Check if a char is ANY mathematical operator
+int isAddOp(const char inChar); // Check if a char is additions or subtraction
+int isMul(const char inChar); // Check if a char is the multiplication operator
+int isDiv(const char inChar); // Check if a char is the division operator
+int isMulOp(const char inChar); // Check if a char is either the multiplication or division operator
 
 #endif
