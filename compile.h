@@ -16,6 +16,8 @@ int term(FILE *srcfile, FILE *asmfile);
 int factor(FILE *srcfile, FILE *asmfile);
 
 int isDigit(const char inChar);	// Check if a char is a numeral
+int isAlpha(const char inChar);	// Check if a char is a letter
+int isAlphaNum(const char inChar);	// Check if a char is a letter or number
 int isWhitespace(const char inChar); // Check is a char is whitespace
 int isAdd(const char inChar); // Check if a char is the addition operator
 int isSub(const char inChar); // Check if a char is the subtraction operator

@@ -12,12 +12,16 @@ int compile(FILE *srcfile, FILE *asmfile){
 	// Emit some sort of header
 	fprintf(asmfile, "segment\t.data\n\n");
 	fprintf(asmfile, "segment\t.bss\n");
+	// FIXME - temporary line for testing variables before we can do assignments
+	fprintf(asmfile, "var1\tresd\t1\n");
 	fprintf(asmfile, "retval\tresd\t1\n");
 	fprintf(asmfile, "\nsegment\t.text\n");
 	fprintf(asmfile, "\tglobal\tasm_main\n");
 	fprintf(asmfile, "asm_main:\n");
 	fprintf(asmfile, "\tenter\t0,\t0\n");
 	fprintf(asmfile, "\tpusha\n");
+	// FIXME - temporary line for testing variables before we can do assignments
+	fprintf(asmfile, "\tmov\t[var1],\tdword 10\n");
 	fprintf(asmfile, "\n;\tBeginning of BASIC code\n\n");
 
 	READCHAR;
@@ -37,7 +41,9 @@ int compile(FILE *srcfile, FILE *asmfile){
 
 // Macro definitions
 
+#define GETTOKEN( token ) { REMOVEWHITESPACE; if(isDigit(nextChar)){ GETNUM( token );} else if(isAlpha(nextChar)){ GETVAR( token );} else EXPECTED("a token")}
 #define GETNUM( numLit ) { REMOVEWHITESPACE; if(!isDigit(nextChar)) EXPECTED("integer"); charPtr = numLit; while(isDigit(nextChar)) { *charPtr = nextChar; charPtr++; READCHAR; } *charPtr = '\0'; }
+#define GETVAR( var ) { REMOVEWHITESPACE; if(!isAlpha(nextChar)) EXPECTED("character"); charPtr = var; *charPtr = '['; charPtr++; while(isAlphaNum(nextChar)) { *charPtr = nextChar; charPtr++; READCHAR; } *charPtr = ']'; charPtr++; *charPtr = '\0'; }
 
 #define REMOVEWHITESPACE { while(isWhitespace(nextChar)) READCHAR; }
 
@@ -111,7 +117,7 @@ int term(FILE *srcfile, FILE *asmfile){
 
 int factor(FILE *srcfile, FILE *asmfile){
 
-	char *numLit = malloc(20*sizeof(char));
+	char *token = malloc(20*sizeof(char));
 	REMOVEWHITESPACE;
 
 	if(nextChar == '('){	// Compound expression
@@ -125,28 +131,41 @@ int factor(FILE *srcfile, FILE *asmfile){
 	}
 	else { // Else get a numerical literal
 		if(isAddOp(nextChar)){
-			// Allow for e.g. -1 or +2 as a numerical literal
+			// Allow for e.g. -1 or +2, or -x as a token
 			if(isAdd(nextChar)){
 				READCHAR;
-				GETNUM( numLit );
-				fprintf(asmfile, "\tmov\teax,\t%s\n", numLit);
+				GETTOKEN( token );
+				fprintf(asmfile, "\tmov\teax,\t%s\n", token);
 			} else if (isSub(nextChar)){
 				READCHAR;
-				GETNUM( numLit );
-				fprintf(asmfile, "\tmov\teax,\t%s\n", numLit);
+				GETTOKEN( token );
+				fprintf(asmfile, "\tmov\teax,\t%s\n", token);
 				fprintf(asmfile, "\tneg\teax\n");
 			}
 		} else {
-			GETNUM( numLit );
-			fprintf(asmfile, "\tmov\teax,\t%s\n", numLit);
+			GETTOKEN( token );
+			fprintf(asmfile, "\tmov\teax,\t%s\n", token);
 		}
 	}
-	free(numLit);
+	free(token);
 	return 0;
 }
 
 inline int isDigit(const char inChar){
   if (inChar >= '0' && inChar <= '9') return 1;
+  else return 0;
+}
+
+inline int isAlpha(const char inChar){
+  if ((inChar >= 'a' && inChar <= 'z') ||
+	    (inChar >= 'A' && inChar <= 'Z')) return 1;
+  else return 0;
+}
+
+inline int isAlphaNum(const char inChar){
+  if ((inChar >= 'a' && inChar <= 'z') ||
+	    (inChar >= 'A' && inChar <= 'Z') ||
+			(inChar >= '0' && inChar <= '9')) return 1;
   else return 0;
 }
 
