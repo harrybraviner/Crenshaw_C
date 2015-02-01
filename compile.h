@@ -15,6 +15,8 @@ int expression(FILE *srcfile, FILE *asmfile);
 int term(FILE *srcfile, FILE *asmfile);
 int factor(FILE *srcfile, FILE *asmfile);
 
+void handleKeyword(char *token);
+
 int isDigit(const char inChar);	// Check if a char is a numeral
 int isAlpha(const char inChar);	// Check if a char is a letter
 int isAlphaNum(const char inChar);	// Check if a char is a letter or number

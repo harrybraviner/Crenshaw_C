@@ -1,11 +1,14 @@
 #include "compile.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 char *charPtr;
 char nextChar;
 
 #define READCHAR { nextChar = fgetc(srcfile); }
+
+#define REMOVEWHITESPACE { while(isWhitespace(nextChar)) READCHAR; }
 
 int compile(FILE *srcfile, FILE *asmfile){
 
@@ -25,7 +28,11 @@ int compile(FILE *srcfile, FILE *asmfile){
 	fprintf(asmfile, "\n;\tBeginning of BASIC code\n\n");
 
 	READCHAR;
-	if(expression(srcfile, asmfile)) return -1;
+	while(nextChar != (char)EOF){
+		if(expression(srcfile, asmfile)) return -1;
+		READCHAR;
+		REMOVEWHITESPACE;
+	}
 
 	// Emit the end matter for the main function
 	fprintf(asmfile, "\n;\tEnd of BASIC code\n\n");
@@ -41,11 +48,10 @@ int compile(FILE *srcfile, FILE *asmfile){
 
 // Macro definitions
 
-#define GETTOKEN( token ) { REMOVEWHITESPACE; if(isDigit(nextChar)){ GETNUM( token );} else if(isAlpha(nextChar)){ GETVAR( token );} else EXPECTED("a token")}
+#define GETTOKEN( token ) { REMOVEWHITESPACE; if(isDigit(nextChar)){ GETNUM( token );} else if(isAlpha(nextChar)){ GETVAR( token ); HANDLEKEYWORD( token );} else EXPECTED("a token")}
 #define GETNUM( numLit ) { REMOVEWHITESPACE; if(!isDigit(nextChar)) EXPECTED("integer"); charPtr = numLit; while(isDigit(nextChar)) { *charPtr = nextChar; charPtr++; READCHAR; } *charPtr = '\0'; }
 #define GETVAR( var ) { REMOVEWHITESPACE; if(!isAlpha(nextChar)) EXPECTED("character"); charPtr = var; *charPtr = '['; charPtr++; while(isAlphaNum(nextChar)) { *charPtr = nextChar; charPtr++; READCHAR; } *charPtr = ']'; charPtr++; *charPtr = '\0'; }
-
-#define REMOVEWHITESPACE { while(isWhitespace(nextChar)) READCHAR; }
+#define HANDLEKEYWORD( token ) {	if(!strcmp(token, "[let]")){ char *varName = malloc(20*sizeof(char)); REMOVEWHITESPACE; GETVAR( varName ); REMOVEWHITESPACE; if (nextChar != '=') {EXPECTED(" = operator");} else { READCHAR; expression(srcfile, asmfile); fprintf(asmfile, "\tmov\t%s,\teax\n", varName); }; strcpy(token, varName); free(varName); } }
 
 #define EXPECTED( expr ) { fprintf(stderr, "Expected %s\n", expr); return -1; }
 
@@ -83,7 +89,7 @@ int expression(FILE *srcfile, FILE *asmfile){
 		REMOVEWHITESPACE;
 	}
 	// The thing with the EOF on the next line is VERY naughty - this in NOT the right way to check for an EOF, I'm just being really lazy and getting away with it. Do as I say, not as I do, kids!
-	if(nextChar != '\n' && nextChar != (char)EOF && nextChar != ')')
+	if(nextChar != '\n' && nextChar != (char)EOF && nextChar != ')' && nextChar != ';')
 		EXPECTED("multiplication or division operator")
 	return 0;
 }
